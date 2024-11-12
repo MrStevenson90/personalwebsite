@@ -1,0 +1,838 @@
+<!-- Part 1: Document Setup and External Dependencies -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tom Stevenson - Personal Website</title>
+    
+    <!-- External Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babylonjs/5.0.0/babylon.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.1/gsap.min.js"></script>
+
+<!-- Part 2: CSS Styles -->
+<style>
+    :root {
+        --color-white: #ffffff;
+        --color-black: #000000;
+        --color-grey-100: #f7f7f7;
+        --color-grey-200: #e6e6e6;
+        --color-grey-300: #d4d4d4;
+        --color-grey-400: #a3a3a3;
+        --color-grey-500: #737373;
+        --color-grey-600: #525252;
+        --color-accent-green: rgba(68, 255, 147, 0.05);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background-color: var(--color-black);
+        color: var(--color-white);
+        line-height: 1.6;
+        overflow-x: hidden;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+    }
+
+    /* Hero Section */
+    .hero {
+        height: 100vh;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .hero-content {
+        z-index: 2;
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    .hero h1 {
+        font-size: 4rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        background: linear-gradient(to right, var(--color-white), var(--color-grey-300));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+        font-size: 1.5rem;
+        color: var(--color-grey-300);
+    }
+
+    /* Section Styles */
+    .section {
+        padding: 4rem 0;
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        width: 60px;
+        height: 4px;
+        background: var(--color-accent-green);
+    }
+
+    /* Card Styles */
+    .card {
+        background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+        border-radius: 8px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 20px var(--color-accent-green);
+    }
+
+    /* Skills Grid */
+    .skills-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .skill-card {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 1.5rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .skill-card:hover {
+        background: rgba(255, 255, 255, 0.08);
+        transform: scale(1.02);
+    }
+
+    /* 3D Canvas Containers */
+    .knowledge-tree-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+    }
+
+    /* Footer */
+    .footer {
+        background: linear-gradient(to top, #000000, #0a0a0a);
+        padding: 2rem 0;
+        margin-top: 4rem;
+    }
+
+    .social-links {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+
+    .social-link {
+        color: var(--color-grey-400);
+        transition: color 0.3s ease;
+    }
+
+    .social-link:hover {
+        color: var(--color-white);
+    }
+
+    /* Animations */
+    @keyframes fadeUpIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-up {
+        animation: fadeUpIn 0.6s ease forwards;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .hero h1 {
+            font-size: 3rem;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+        }
+
+        .container {
+            padding: 0 1rem;
+        }
+
+        .skills-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<!-- Part 3: HTML Structure -->
+<body>
+    <!-- Hero Section with Top Knowledge Tree -->
+    <section class="hero">
+        <div id="top-knowledge-tree" class="knowledge-tree-container"></div>
+        <div class="hero-content">
+            <h1>Tom Stevenson</h1>
+            <p>Founder • Developer • Sports-Entertainment-Technology</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Current Role -->
+        <section class="section" id="current-role">
+            <h2 class="section-title">Current Role</h2>
+            <div class="card">
+                <h3>Founder/CEO - RugbyXYZ</h3>
+                <p>2024 - Present</p>
+            </div>
+        </section>
+
+        <!-- Leadership -->
+        <section class="section" id="leadership">
+            <h2 class="section-title">Leadership & Sports Management</h2>
+            <div class="card">
+                <h3>President - CRL Sports</h3>
+                <p>2022 - 2024</p>
+                <ul>
+                    <li>Worked on Major League Rugby bid for San Francisco</li>
+                    <li>Promoted USA National 9's in Winnemucca</li>
+                    <li>Created and sold rights to Beastball (1v1 Rugby Game) to PLN</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>President - California Rugby League</h3>
+                <p>2019 - 2021</p>
+                <ul>
+                    <li>Raised over $150,000 to build the sport in the USA</li>
+                    <li>Developed grassroots programs and infrastructure</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- USA Experience -->
+        <section class="section" id="usa-experience">
+            <h2 class="section-title">Professional Experience - USA</h2>
+
+            <div class="card">
+                <h3>Futures and MicroCap Trader</h3>
+                <p>2020 - 2022</p>
+                <ul>
+                    <li>Self-employed trader during COVID-19 period</li>
+                    <li>Generated revenue to fund league operations</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Carpenter</h3>
+                <p>2019</p>
+                <ul>
+                    <li>Completed siding installation for 50+ balconies</li>
+                    <li>New apartment construction project near Fremont train station</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Shipping & Receiving</h3>
+                <ul>
+                    <li>Head of Shipping/Receiving at Eastern Metal Works (2018)</li>
+                    <li>Assistant Shipping/Receiving at Paladin Sports (2017 - 2020)</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Uber Driver</h3>
+                <p>2020 - 2024</p>
+                <ul>
+                    <li>Morning shift specialist (3-7am)</li>
+                    <li>Generated $15,000-$30,000 annual additional earnings</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Additional USA Experience -->
+<section class="section" id="additional-usa">
+    <h2 class="section-title">Additional USA Experience</h2>
+    <div class="card-container">
+        <div class="card">
+            <h3>Bouncer</h3>
+            <p class="company">Noonan Irish Bar, Pearl River, NY</p>
+            <p class="period">2017</p>
+        </div>
+        <div class="card">
+            <h3>Chicken Nugget Delivery Driver</h3>
+            <p class="company">Garden Catering</p>
+            <p class="period">2017</p>
+        </div>
+    </div>
+</section>
+
+        <!-- Australia Experience -->
+        <section class="section" id="australia-experience">
+            <h2 class="section-title">Professional Experience - Australia</h2>
+            
+            <!-- Legal & Administrative -->
+            <div class="subsection">
+                <h3 class="subsection-title">Legal & Administrative Sector</h3>
+                <div class="card">
+                    <h4>Law Clerk - 1Legal</h4>
+                    <p>2016</p>
+                    <p>Property settlements specialist</p>
+                </div>
+                <div class="card">
+                    <h4>Settlement Officer - First Mortgage Services</h4>
+                    <p>2015</p>
+                    <ul>
+                        <li>Processed documents for property settlements ($100K - $1.5B)</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Law Clerk - Quinn and Scattini Lawyers</h4>
+                    <p>2013 - 2014</p>
+                    <ul>
+                        <li>Advanced from mail clerk to handling criminal courts adjournments</li>
+                    </ul>
+                </div>
+            </div>
+
+<!-- Entertainment & Media Experience -->
+<section class="section" id="entertainment-media">
+    <h2 class="section-title">Entertainment & Media</h2>
+    <div class="card-container">
+        <div class="card">
+            <h3>Comedy Night Promoter/Interviewer</h3>
+            <p class="company">Little Tokyo Two</p>
+            <p class="period">2015</p>
+        </div>
+        <div class="card">
+            <h3>Founder/Filmmaker</h3>
+            <p class="company">Rancho Tony's Production</p>
+            <p class="period">2015</p>
+            <ul class="achievements">
+                <li>Produced and premiered "Shards, Bangers and Blood"</li>
+                <li>Wrote screenplays for feature films</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3>Event Promoter</h3>
+            <p class="period">2012 - 2013</p>
+            <ul class="achievements">
+                <li>Organized concerts featuring emerging artists like Flume and Royal Blood</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3>Recording Studio Intern</h3>
+            <p class="company">Applewood Studios</p>
+            <p class="period">2012</p>
+            <ul class="achievements">
+                <li>Worked under Aria award-winning producer Lachlan Magoo</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3>Founder/Producer</h3>
+            <p class="company">Bedlam Records</p>
+            <p class="period">2011 - 2013</p>
+            <ul class="achievements">
+                <li>Produced for artists including Swim, Kate & Max</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3>Professional Musician</h3>
+            <p class="company">Comic Sans/Swim</p>
+            <p class="period">2008 - 2011</p>
+            <ul class="achievements">
+                <li>Triple J Unearthed winner</li>
+                <li>Toured Australia</li>
+                <li>Performed at major festivals alongside Tame Impala, Florence and the Machine</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3>Musician</h3>
+            <p class="company">Sublimarine</p>
+            <p class="period">2005 - 2007</p>
+            <ul class="achievements">
+                <li>Recorded and released 6 experimental music albums</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3>Lead Guitarist</h3>
+            <p class="company">TBC (Band)</p>
+            <p class="period">2007</p>
+            <ul class="achievements">
+                <li>Headlined School Senior Formal</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<!-- Entrepreneurial Ventures -->
+<section class="section" id="entrepreneurial">
+    <h2 class="section-title">Entrepreneurial Ventures</h2>
+    <div class="card-container">
+        <div class="card">
+            <h3>Self-employed Removalist</h3>
+            <p class="company">Rancho Transport</p>
+            <p class="period">2017</p>
+        </div>
+        <div class="card">
+            <h3>Herbal Remedy Distribution</h3>
+            <p class="period">2012</p>
+            <ul class="achievements">
+                <li>Built supply chain for plant-based products</li>
+                <li>Generated over $100K in revenue</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3>Art Sales</h3>
+            <p class="period">2008 - 2013</p>
+            <ul class="achievements">
+                <li>Generated $10,000+ in revenue from artwork</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3>Kept Low Mowing</h3>
+            <p class="period">2008</p>
+            <ul class="achievements">
+                <li>Built customer base of 50 regular clients</li>
+                <li>Successfully sold routes to another freelancer</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+
+        <!-- Rugby Experience -->
+        <section class="section" id="rugby">
+            <h2 class="section-title">Rugby Experience</h2>
+            <div class="subsection">
+                <h3 class="subsection-title">Playing History</h3>
+                <div class="card">
+                    <ul>
+                        <li>San Jose Seahawks (2019)</li>
+                        <li>White Plains Rugby/Wombats Rugby League (2017 - 2018)</li>
+                        <li>QUT Trouts & Law Rugby (2015 - 2016)</li>
+                        <li>Wests Mitchelton Rugby League (2013 - 2017)</li>
+                        <li>Canberra Raiders Academy (2007)</li>
+                        <li>Brisbane Boys College First XV (2007)</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="subsection">
+                <h3 class="subsection-title">Coaching</h3>
+                <div class="card">
+                    <h4>Aspetuck Valley Varsity - Backs Coach</h4>
+                    <p>2017</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills -->
+        <section class="section" id="skills">
+            <h2 class="section-title">Technical Skills</h2>
+            <div class="skills-grid">
+                <div class="skill-card">
+                    <h3>Programming</h3>
+                    <ul>
+                        <li>JavaScript</li>
+                        <li>Three.js</li>
+                        <li>Node.js</li>
+                        <li>HTML</li>
+                        <li>CSS</li>
+                    </ul>
+                </div>
+                <div class="skill-card">
+                    <h3>Media Production</h3>
+                    <ul>
+                        <li>Music Production</li>
+                        <li>Film Making</li>
+                        <li>Screenwriting</li>
+                    </ul>
+                </div>
+                <div class="skill-card">
+                    <h3>Creative</h3>
+                    <ul>
+                        <li>Art</li>
+                        <li>Music</li>
+                        <li>Event Production</li>
+                    </ul>
+                </div>
+                <div class="skill-card">
+                    <h3>Additional Skills</h3>
+                    <ul>
+                        <li>Carpentry</li>
+                        <li>Project Management</li>
+                        <li>Risk Management</li>
+                        <li>Forklift Instructor</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Education -->
+        <section class="section" id="education">
+            <h2 class="section-title">Education & Certifications</h2>
+            <div class="card">
+                <ul>
+                    <li>FINRA SIE Certification</li>
+                    <li>Forklift Instructor and Certifier</li>
+                    <li>QUT - Justice & Law (Partial)</li>
+                    <li>QUT - Film School (Partial)</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Bottom Knowledge Tree -->
+        <div id="bottom-knowledge-tree" class="knowledge-tree-container"></div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="social-links">
+                <a href="https://github.com/MrStevenson90" class="social-link">GitHub</a>
+            </div>
+        </div>
+    </footer>
+</body>
+<!-- Part 4: Three.js Knowledge Tree Implementation -->
+<script>
+class KnowledgeTree {
+    constructor(containerId) {
+        this.container = document.getElementById(containerId);
+        this.scene = new THREE.Scene();
+        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        this.renderer = new THREE.WebGLRenderer({ alpha: true });
+        this.nodes = [];
+        this.init();
+    }
+
+    init() {
+        // Setup renderer
+        this.renderer.setSize(window.innerWidth, this.container.clientHeight);
+        this.renderer.setClearColor(0x000000, 0);
+        this.container.appendChild(this.renderer.domElement);
+
+        // Setup camera
+        this.camera.position.z = 5;
+
+        // Create nodes
+        this.createNodes();
+
+        // Add lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        const pointLight = new THREE.PointLight(0x44ff93, 0.5);
+        pointLight.position.set(5, 5, 5);
+        this.scene.add(ambientLight, pointLight);
+
+        // Start animation
+        this.animate();
+
+        // Add event listeners
+        window.addEventListener('resize', () => this.onWindowResize());
+        this.container.addEventListener('mousemove', (e) => this.onMouseMove(e));
+    }
+
+    createNodes() {
+        const geometry = new THREE.SphereGeometry(0.1, 32, 32);
+        const material = new THREE.MeshPhongMaterial({
+            color: 0x44ff93,
+            transparent: true,
+            opacity: 0.8
+        });
+
+        for (let i = 0; i < 50; i++) {
+            const node = new THREE.Mesh(geometry, material);
+            node.position.set(
+                (Math.random() - 0.5) * 10,
+                (Math.random() - 0.5) * 10,
+                (Math.random() - 0.5) * 10
+            );
+            this.nodes.push(node);
+            this.scene.add(node);
+        }
+    }
+
+    animate() {
+        requestAnimationFrame(() => this.animate());
+
+        // Rotate nodes
+        this.nodes.forEach(node => {
+            node.rotation.x += 0.01;
+            node.rotation.y += 0.01;
+        });
+
+        this.renderer.render(this.scene, this.camera);
+    }
+
+    onWindowResize() {
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(window.innerWidth, this.container.clientHeight);
+    }
+
+    onMouseMove(event) {
+        const mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+        const mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+
+        this.scene.rotation.y = mouseX * 0.3;
+        this.scene.rotation.x = mouseY * 0.3;
+    }
+}
+
+</script>
+
+<!-- Part 5: Animation and Interaction Setup -->
+<script>
+// Initialize knowledge trees
+document.addEventListener('DOMContentLoaded', () => {
+    const topTree = new KnowledgeTree('top-knowledge-tree');
+    const bottomTree = new KnowledgeTree('bottom-knowledge-tree');
+
+    // Animate hero content
+    anime({
+        targets: '.hero-content',
+        opacity: [0, 1],
+        translateY: [20, 0],
+        duration: 1000,
+        easing: 'easeOutExpo'
+    });
+
+    // Animate sections on scroll
+    const sections = document.querySelectorAll('.section');
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px'
+    };
+
+    const sectionObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.animation = 'fadeUpIn 0.6s ease forwards';
+                sectionObserver.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    sections.forEach(section => {
+        section.style.opacity = '0';
+        sectionObserver.observe(section);
+    });
+
+    // Card hover effects
+    const cards = document.querySelectorAll('.card');
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', () => {
+            anime({
+                targets: card,
+                scale: 1.02,
+                boxShadow: '0 4px 30px rgba(68, 255, 147, 0.1)',
+                duration: 300,
+                easing: 'easeOutExpo'
+            });
+        });
+
+        card.addEventListener('mouseleave', () => {
+            anime({
+                targets: card,
+                scale: 1,
+                boxShadow: '0 4px 20px rgba(68, 255, 147, 0)',
+                duration: 300,
+                easing: 'easeOutExpo'
+            });
+        });
+    });
+});
+
+// Debounce function for performance
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Optimize scroll performance
+const optimizedScroll = debounce(() => {
+    const scrollPosition = window.scrollY;
+    const windowHeight = window.innerHeight;
+    
+    // Update 3D scenes based on scroll position
+    const topTree = document.getElementById('top-knowledge-tree');
+    const bottomTree = document.getElementById('bottom-knowledge-tree');
+    
+    if (topTree && scrollPosition < windowHeight) {
+        const opacity = 1 - (scrollPosition / windowHeight);
+        topTree.style.opacity = opacity;
+    }
+    
+    if (bottomTree && scrollPosition > document.body.scrollHeight - windowHeight * 2) {
+        const opacity = (scrollPosition - (document.body.scrollHeight - windowHeight * 2)) / windowHeight;
+        bottomTree.style.opacity = opacity;
+    }
+}, 16);
+
+// Optimize resize performance
+const optimizedResize = debounce(() => {
+    // Update responsive elements
+    const container = document.querySelector('.container');
+    const windowWidth = window.innerWidth;
+    
+    if (windowWidth < 768) {
+        container.style.padding = '0 1rem';
+    } else {
+        container.style.padding = '0 2rem';
+    }
+    
+    // Update 3D scenes
+    if (typeof topTree !== 'undefined') topTree.onWindowResize();
+    if (typeof bottomTree !== 'undefined') bottomTree.onWindowResize();
+}, 100);
+
+// Performance monitoring utilities
+const performanceMonitor = {
+    metrics: {},
+    
+    startMeasure(label) {
+        this.metrics[label] = performance.now();
+    },
+    
+    endMeasure(label) {
+        if (this.metrics[label]) {
+            const duration = performance.now() - this.metrics[label];
+            console.debug(`${label}: ${duration.toFixed(2)}ms`);
+            delete this.metrics[label];
+            return duration;
+        }
+        return null;
+    },
+    
+    // Monitor frame rate
+    fps: {
+        frames: 0,
+        lastTime: performance.now(),
+        
+        measure() {
+            this.frames++;
+            const currentTime = performance.now();
+            if (currentTime - this.lastTime >= 1000) {
+                console.debug(`FPS: ${this.frames}`);
+                this.frames = 0;
+                this.lastTime = currentTime;
+            }
+        }
+    }
+};
+
+// Lazy loading for images and heavy content
+const lazyLoad = {
+    observer: null,
+    
+    init() {
+        this.observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    if (entry.target.dataset.src) {
+                        entry.target.src = entry.target.dataset.src;
+                        entry.target.removeAttribute('data-src');
+                    }
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            rootMargin: '50px'
+        });
+        
+        document.querySelectorAll('[data-src]').forEach(element => {
+            this.observer.observe(element);
+        });
+    }
+};
+
+// Memory management
+const memoryManager = {
+    disposableObjects: new Set(),
+    
+    register(object) {
+        this.disposableObjects.add(object);
+    },
+    
+    dispose() {
+        this.disposableObjects.forEach(object => {
+            if (object.geometry) object.geometry.dispose();
+            if (object.material) object.material.dispose();
+            if (object.texture) object.texture.dispose();
+        });
+        this.disposableObjects.clear();
+    }
+};
+
+// Event listeners
+window.addEventListener('scroll', optimizedScroll, { passive: true });
+window.addEventListener('resize', optimizedResize, { passive: true });
+
+// Initialize components when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    lazyLoad.init();
+    
+    // Start performance monitoring
+    performanceMonitor.startMeasure('pageLoad');
+    
+    // Initialize any remaining components
+    window.addEventListener('load', () => {
+        performanceMonitor.endMeasure('pageLoad');
+        
+        // Start FPS monitoring if in development
+        if (location.hostname === 'localhost') {
+            requestAnimationFrame(function measureFPS() {
+                performanceMonitor.fps.measure();
+                requestAnimationFrame(measureFPS);
+            });
+        }
+    });
+});
+
+// Cleanup on page unload
+window.addEventListener('unload', () => {
+    memoryManager.dispose();
+});
+</script>
+</body>
+</html>
